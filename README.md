@@ -1,5 +1,7 @@
 # CryptoTigers
 
+Project setup taken from the excellent Solidity template by [paulrberg](https://github.com/PaulRBerg/solidity-template)
+
 ### Introduction
 
 This project will give engineers a stronger working knowledge of web3. It involves developing a smart contract in Solidity and deploying it to a test network. We will be working with an NFT contract along the lines of CryptoPunks (see https://github.com/larvalabs/cryptopunks/blob/master/contracts/CryptoPunksMarket.sol).
@@ -7,6 +9,21 @@ This project will give engineers a stronger working knowledge of web3. It involv
 ### Prerequisites
 
 This project is designed for experienced software engineers who are in the early stages of learning web3. You will be writing code in Solidity, but to get the most out of it you should already be very comfortable writing applications and tests in at least one other language. You should also have some prior knowledge of Solidity. Having previously completed the first CryptoZombies Solidity Path (https://cryptozombies.io/solidity) would be ideal. All the coding for the project is in Solidity, but the contract deployment and tests make use of JavaScript and NPM. Previous experience of these, or at least the ability to Google your way out of trouble, will help a lot.
+
+### Setup
+
+```
+yarn install
+npx hardhat compile
+npx hardhat test
+```
+
+This project uses [husky](https://www.npmjs.com/package/husky) to setup git commit hooks, so that whenever you make a commit it will automatically format all js/ts/sol files. However, in order for this to work you must be using a version of node >=0.14.12.0 (see [this explanation](https://stackoverflow.com/questions/63317051/node9511-experimentalwarning-the-esm-module-loader-is-experimental)).
+
+To install a newer version, install [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) (which you should be using anyway!) and then install a sufficiently recent version of node.js, e.g.
+
+`nvm install v16.13.0`
+
 
 ### Hardhat
 
