@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.2;
+pragma solidity 0.8.9;
+
 /*
    NFT Contract along the lines of CryptoPunks. For the original see:
    https://github.com/larvalabs/cryptopunks/blob/master/contracts/CryptoPunksMarket.sol
@@ -11,24 +12,23 @@ pragma solidity 0.8.2;
    https://docs.openzeppelin.com/contracts/2.x/api/token/erc721#ERC721Enumerable
 */
 contract TigerBasicNFT {
-
     // how many unique tiger tokens exist
-    uint public constant totalSupply = 100;
-    
+    uint256 public constant totalSupply = 100;
+
     // address that deployed this contract
     address private deployer;
 
     // address of the artist, initial owner of all tiger tokens, recipient of artist's fees
     address private artist;
-    
+
     // initial sale price for all tokens
-    uint private startingPrice;
+    uint256 private startingPrice;
 
     // mapping from token ID to owner address
-    mapping(uint => address) private tigerOwners;
+    mapping(uint256 => address) private tigerOwners;
 
     // mapping from owner address to number of tokens they own
-    mapping(address => uint) private balanceOf;
+    mapping(address => uint256) private balanceOf;
 
     // mapping from owner address to list of IDs of all tokens they own
     mapping(address => mapping(uint256 => uint256)) private tigersOwnedBy;
@@ -40,19 +40,19 @@ contract TigerBasicNFT {
     struct SaleOffer {
         bool isForSale;
         address seller;
-        uint price;
+        uint256 price;
     }
-    mapping (uint => SaleOffer) public tigersForSale;
+    mapping(uint256 => SaleOffer) public tigersForSale;
 
     // ether held by the contract on behalf of addresses that have interacted with it
-    mapping (address => uint) public pendingWithdrawals;
+    mapping(address => uint256) public pendingWithdrawals;
 
-    event TigerForSale(address indexed seller, uint indexed tigerId, uint price);
-    event TigerSold(address indexed seller, address indexed buyer, uint indexed tigerId, uint price);
-    event TigerWithdrawnFromSale(address indexed seller, uint indexed tigerId);
-    
+    event TigerForSale(address indexed seller, uint256 indexed tigerId, uint256 price);
+    event TigerSold(address indexed seller, address indexed buyer, uint256 indexed tigerId, uint256 price);
+    event TigerWithdrawnFromSale(address indexed seller, uint256 indexed tigerId);
+
     // create the contract, artist is set here and never changes subsequently
-    constructor(address _artist, uint _startingPrice) {
+    constructor(address _artist, uint256 _startingPrice) {
         require(_artist != address(0));
         artist = _artist;
         startingPrice = _startingPrice;
@@ -60,18 +60,18 @@ contract TigerBasicNFT {
     }
 
     // allow anyone to see if a tiger is for sale and, if so, for how much
-    function isForSale(uint tigerId) external view returns (bool, uint) {
+    function isForSale(uint256 tigerId) external view returns (bool, uint256) {
         require(tigerId < totalSupply, "index out of range");
         SaleOffer memory saleOffer = getSaleInfo(tigerId);
         if (saleOffer.isForSale) {
-            return(true, saleOffer.price);
+            return (true, saleOffer.price);
         }
         return (false, 0);
     }
 
     // tokens which have never been sold are for sale at the starting price,
     // all others are not unless the owner puts them up for sale
-    function getSaleInfo(uint tigerId) private view returns (SaleOffer memory saleOffer) {
+    function getSaleInfo(uint256 tigerId) private view returns (SaleOffer memory saleOffer) {
         if (tigerOwners[tigerId] == address(0)) {
             saleOffer = SaleOffer(true, artist, startingPrice);
         } else {
@@ -80,12 +80,12 @@ contract TigerBasicNFT {
     }
 
     // get the number of tigers owned by the address
-    function getBalance(address owner) public view returns (uint) {
-        return balanceOf[owner ];
+    function getBalance(address owner) public view returns (uint256) {
+        return balanceOf[owner];
     }
 
     // get the current owner of a token, unsold tokens belong to the artist
-    function getOwner(uint tigerId) public view returns (address) {
+    function getOwner(uint256 tigerId) public view returns (address) {
         require(tigerId < totalSupply, "index out of range");
         address owner = tigerOwners[tigerId];
         if (owner == address(0)) {
@@ -95,14 +95,13 @@ contract TigerBasicNFT {
     }
 
     // get the ID of the index'th tiger belonging to owner (who must own at least index + 1 tigers)
-    function tigerByOwnerAndIndex(address owner, uint index) public view returns (uint) {
+    function tigerByOwnerAndIndex(address owner, uint256 index) public view returns (uint256) {
         require(index < balanceOf[owner], "owner doesn't have that many tigers");
         return tigersOwnedBy[owner][index];
     }
-    
 
     // allow the current owner to put a tiger token up for sale
-    function putUpForSale(uint tigerId, uint minSalePriceInWei) external {
+    function putUpForSale(uint256 tigerId, uint256 minSalePriceInWei) external {
         require(tigerId < totalSupply, "index out of range");
         require(getOwner(tigerId) == msg.sender, "not owner");
         tigersForSale[tigerId] = SaleOffer(true, msg.sender, minSalePriceInWei);
@@ -110,7 +109,7 @@ contract TigerBasicNFT {
     }
 
     // allow the current owner to withdraw a tiger token from sale
-    function withdrawFromSale(uint tigerId) external {
+    function withdrawFromSale(uint256 tigerId) external {
         require(tigerId < totalSupply, "index out of range");
         require(getOwner(tigerId) == msg.sender, "not owner");
         tigersForSale[tigerId] = SaleOffer(false, address(0), 0);
@@ -118,7 +117,11 @@ contract TigerBasicNFT {
     }
 
     // update ownership tracking for newly acquired tiger token
-    function updateTigerOwnership(uint tigerId, address newOwner, address previousOwner) private {
+    function updateTigerOwnership(
+        uint256 tigerId,
+        address newOwner,
+        address previousOwner
+    ) private {
         bool firstSale = tigerOwners[tigerId] == address(0);
         tigerOwners[tigerId] = newOwner;
         balanceOf[newOwner]++;
@@ -129,12 +132,12 @@ contract TigerBasicNFT {
             // we store the last token in the index of the token to delete, and
             // then delete the last slot (swap and pop).
 
-            uint lastTokenIndex = balanceOf[previousOwner];
-            uint tokenIndex = tigersOwnedByIndex[tigerId];
+            uint256 lastTokenIndex = balanceOf[previousOwner];
+            uint256 tokenIndex = tigersOwnedByIndex[tigerId];
 
             // When the token to delete is the last token, the swap operation is unnecessary
             if (tokenIndex != lastTokenIndex) {
-                uint lastTokenId = tigersOwnedBy[previousOwner][lastTokenIndex];
+                uint256 lastTokenId = tigersOwnedBy[previousOwner][lastTokenIndex];
                 // Move the last token to the slot of the to-delete token
                 tigersOwnedBy[previousOwner][tokenIndex] = lastTokenId;
                 // Update the moved token's index
@@ -143,16 +146,16 @@ contract TigerBasicNFT {
 
             delete tigersOwnedBy[previousOwner][lastTokenIndex];
         }
-        uint newIndex = balanceOf[newOwner] - 1;
+        uint256 newIndex = balanceOf[newOwner] - 1;
         tigersOwnedBy[newOwner][newIndex] = tigerId;
         tigersOwnedByIndex[tigerId] = newIndex;
     }
 
     // allow someone to buy a tiger offered for sale
-    function buyTiger(uint tigerId) external payable {
+    function buyTiger(uint256 tigerId) external payable {
         require(tigerId < totalSupply, "index out of range");
         SaleOffer memory saleOffer = getSaleInfo(tigerId);
-        require(saleOffer.isForSale,"not for sale");
+        require(saleOffer.isForSale, "not for sale");
         require(msg.value >= saleOffer.price, "price not met");
         require(saleOffer.seller == getOwner(tigerId), "seller no longer owns");
         updateTigerOwnership(tigerId, msg.sender, saleOffer.seller);
@@ -160,6 +163,4 @@ contract TigerBasicNFT {
         pendingWithdrawals[saleOffer.seller] += msg.value;
         emit TigerSold(saleOffer.seller, msg.sender, tigerId, saleOffer.price);
     }
-
-    
 }
