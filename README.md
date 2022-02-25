@@ -27,7 +27,7 @@ To install a newer version, install [nvm](https://github.com/nvm-sh/nvm#installi
 
 ### Hardhat
 
-Hardhat is essential for web3 development, it allows for easy testing and debugging of smart contracts. You can check out their quickstart guide to install it and learn how to test with it:
+Using a proper development environment like Hardhat is essential for web3 development. You can check out their quickstart guide to install it and learn how to test with it:
 
 https://hardhat.org/tutorial/
 
